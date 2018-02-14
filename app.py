@@ -16,11 +16,11 @@ def verify_fb_token():
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
 
-# @app.route("/", methods=['POST'])
-def receive_message(request):
+@app.route("/", methods=['POST'])
+def receive_message():
     request_data = request.get_json()
-
     messages = get_valid_messages_from_request(request_data)
+    print(messages)
     for message in messages:
         recipient_id = message['sender']['id']
         response_sent_text = get_message_response()
@@ -31,17 +31,15 @@ def get_valid_messages_from_request(request_data):
     all_messages = []
     for event in request_data['entry']:
         for messaging_object in event['messaging']:
-            for message in messaging_object['message']:
-                all_messages.append(message)
+                all_messages.append(messaging_object["message"])
     valid_messages = filter(is_valid_message, all_messages)
     return valid_messages
 
 def message_contains_content(message):
-    return 'text' in message['message'].keys() or 'attachments' in message['message'].keys()
+    return ('text' in message.keys()) or ('attachments' in message.keys())
 
 def is_valid_message(message):
-    print message
-    return 'message' in message and message_contains_content(message)
+    return message_contains_content(message)
 
 def get_message_response():
     sample_responses = ["You are stunning!", "We're proud of you.", "Keep on being you!", "We're greatful to know you :)"]
