@@ -5,8 +5,8 @@ from flask import Flask, request
 from pymessenger.bot import Bot
 
 app = Flask(__name__)
-ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
-VERIFY_TOKEN = os.environ['VERIFY_TOKEN']
+ACCESS_TOKEN = os.environ['FACEBOOK_ACCESS_TOKEN']
+VERIFY_TOKEN = os.environ['FACEBOOK_VERIFY_TOKEN']
 bot = Bot(ACCESS_TOKEN)
 
 @app.route("/", methods=['GET'])
@@ -16,8 +16,8 @@ def verify_fb_token():
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
 
-@app.route("/", methods=['POST'])
-def receive_message():
+# @app.route("/", methods=['POST'])
+def receive_message(request):
     request_data = request.get_json()
 
     messages = get_valid_messages_from_request(request_data)
@@ -30,16 +30,18 @@ def receive_message():
 def get_valid_messages_from_request(request_data):
     all_messages = []
     for event in request_data['entry']:
-        for message in request_data['message']:
-            all_messages.append(message)
+        for messaging_object in event['messaging']:
+            for message in messaging_object['message']:
+                all_messages.append(message)
     valid_messages = filter(is_valid_message, all_messages)
     return valid_messages
 
 def message_contains_content(message):
-    return message['message'].get('text') or message['message'].get('attachments')
+    return 'text' in message['message'].keys() or 'attachments' in message['message'].keys()
 
 def is_valid_message(message):
-    return message.get('message') and message_contains_content(message)
+    print message
+    return 'message' in message and message_contains_content(message)
 
 def get_message_response():
     sample_responses = ["You are stunning!", "We're proud of you.", "Keep on being you!", "We're greatful to know you :)"]
