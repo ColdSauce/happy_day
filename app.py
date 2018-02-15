@@ -18,6 +18,8 @@ def verify_fb_token():
 
 @app.route("/", methods=['POST'])
 def receive_message():
+    print str(request.get_json())
+    return "Message Processed"
     request_data = request.get_json()
     messages = get_valid_messages_from_request(request_data)
     print(messages)
@@ -28,10 +30,12 @@ def receive_message():
     return "Message Processed"
 
 def get_valid_messages_from_request(request_data):
+    print "yolo:"
+    print request_data
     all_messages = []
     for event in request_data['entry']:
         for messaging_object in event['messaging']:
-                all_messages.append(messaging_object["message"])
+                all_messages.append(messaging_object)
     valid_messages = filter(is_valid_message, all_messages)
     return valid_messages
 
@@ -39,6 +43,7 @@ def message_contains_content(message):
     return ('text' in message.keys()) or ('attachments' in message.keys())
 
 def is_valid_message(message):
+    message = message['message']
     return message_contains_content(message)
 
 def get_message_response():
